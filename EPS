@@ -1,241 +1,261 @@
-local function API_Check()
-    if Drawing == nil then
-        return "No"
-    else
-        return "Yes"
-    end
-end
+local VEC3 = Vector3.new
+local VEC2 = Vector2.new
+local COL3 = Color3.new
+local RGB = Color3.fromRGB
+local CFNEW = CFrame.new
+local INSTNEW = Instance.new
+local TBLINS = table.insert
+local Drawing_new = Drawing.new
+local Ray_new = Ray.new
+local TweenInfo_new = TweenInfo.new
 
-local Find_Required = API_Check()
-
-if Find_Required == "No" then
-    game:GetService("StarterGui"):SetCore("SendNotification",{
-        Title = "pick#6553";
-        Text = "Pick script could not be loaded because your exploit is unsupported.";
-        Duration = math.huge;
-        Button1 = "OK"
-    })
-
-    return
-end
-
-local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
-local Camera = game:GetService("Workspace").CurrentCamera
+local Workspace = game:GetService("Workspace")
+local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
-local TestService = game:GetService("TestService")
+local TweenService = game:GetService("TweenService")
+local Camera = Workspace:FindFirstChildOfClass("Camera")
 
-local Typing = false
+local LocalPlayer = Players.LocalPlayer
 
-_G.SendNotifications = true   -- If set to true then the script would notify you frequently on any changes applied and when loaded / errored. (If a game can detect this, it is recommended to set it to false)
-_G.DefaultSettings = false   -- If set to true then the Pick script would run with default settings regardless of any changes you made.
+_G.PlayerLocation = function()
+	--[[
+	-- GLOBAL ESP
+	local Humanoids = {}
+	for i,v in pairs(Workspace:GetDescendants()) do
+		if v:IsA("Humanoid") or v.Name == "Humanoid" then
+			TBLINS(Humanoids, v.Parent)
+		end
+	end
+	return Humanoids;
+	]]--
+	return Players:GetChildren();
+end
 
-_G.TeamCheck = false   -- If set to true then the script would create Picks only for the enemy team members.
-
---[!]-- ONLY ONE OF THESE VALUES SHOULD BE SET TO TRUE TO NOT ERROR THE SCRIPT --[!]--
-
-_G.FromMouse = false   -- If set to true, the Picks will come from the position of your mouse curson on your screen.
-_G.FromCenter = false   -- If set to true, the Picks will come from the center of your screen.
-_G.FromBottom = true   -- If set to true, the Picks will come from the bottom of your screen.
-
-_G.PicksVisible = true   -- If set to true then the Picks will be visible and vice versa.
-_G.PickColor = Color3.fromRGB(255, 80, 10)   -- The color that the Picks would appear as.
-_G.PickThickness = 1   -- The thickness of the Picks.
-_G.PickTransparency = 0.7   -- The transparency of the Picks.
-
-_G.ModeSkipKey = Enum.KeyCode.E   -- The key that changes between modes that indicate where will the Picks come from.
-_G.DisableKey = Enum.KeyCode.Q   -- The key that disables / enables the Picks.
-
-local function CreatePicks()
-    for _, v in next, Players:GetPlayers() do
-        if v.Name ~= game.Players.LocalPlayer.Name then
-            local PickLine = Drawing.new("Line")
+CreateDrawing = function(ClassName)
+	return function(Props)
+		local Create = Drawing_new(ClassName)
+		for i,v in pairs(Props) do
+			Create[i] = v
+		end
+		return Create
+	end
+end;
+	
+local Drawings = {}
+function IsPartVisible(Part1, Part2)
+    local CheckPart = INSTNEW("Part")
+	CheckPart.Parent = Workspace
+	CheckPart.Name = "CheckVisWall"
+    CheckPart.Anchored = true
+    CheckPart.CanCollide = false
+    CheckPart.Transparency = 1
+    CheckPart.Size = VEC3(1.5, 1.5, 1.5) * Part2.Size
+    CheckPart.CFrame = Part2.CFrame
     
-            RunService.RenderStepped:Connect(function()
-                if workspace:FindFirstChild(v.Name) ~= nil and workspace[v.Name]:FindFirstChild("HumanoidRootPart") ~= nil then
-                    local HumanoidRootPart_Position, HumanoidRootPart_Size = workspace[v.Name].HumanoidRootPart.CFrame, workspace[v.Name].HumanoidRootPart.Size * 1
-                    local Vector, OnScreen = Camera:WorldToViewportPoint(HumanoidRootPart_Position * CFrame.new(0, -HumanoidRootPart_Size.Y, 0).p)
-                    
-                    PickLine.Thickness = _G.PickThickness
-                    PickLine.Transparency = _G.PickTransparency
-                    PickLine.Color = _G.PickColor
-
-                    if _G.FromMouse == true and _G.FromCenter == false and _G.FromBottom == false then
-                        PickLine.From = Vector2.new(UserInputService:GetMouseLocation().X, UserInputService:GetMouseLocation().Y)
-                    elseif _G.FromMouse == false and _G.FromCenter == true and _G.FromBottom == false then
-                        PickLine.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
-                    elseif _G.FromMouse == false and _G.FromCenter == false and _G.FromBottom == true then
-                        PickLine.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
-                    end
-
-                    if OnScreen == true  then
-                        PickLine.To = Vector2.new(Vector.X, Vector.Y)
-                        if _G.TeamCheck == true then 
-                            if Players.LocalPlayer.Team ~= v.Team then
-                                PickLine.Visible = _G.PicksVisible
-                            else
-                                PickLine.Visible = false
-                            end
-                        else
-                            PickLine.Visible = _G.PicksVisible
-                        end
-                    else
-                        PickLine.Visible = false
-                    end
-                else
-                    PickLine.Visible = false
-                end
-            end)
-
-            Players.PlayerRemoving:Connect(function()
-                PickLine.Visible = false
-            end)
-        end
-    end
-
-    Players.PlayerAdded:Connect(function(Player)
-        Player.CharacterAdded:Connect(function(v)
-            if v.Name ~= game.Players.LocalPlayer.Name then
-                local PickLine = Drawing.new("Line")
-        
-                RunService.RenderStepped:Connect(function()
-                    if workspace:FindFirstChild(v.Name) ~= nil and workspace[v.Name]:FindFirstChild("HumanoidRootPart") ~= nil then
-                        local HumanoidRootPart_Position, HumanoidRootPart_Size = workspace[v.Name].HumanoidRootPart.CFrame, workspace[v.Name].HumanoidRootPart.Size * 1
-                    	local Vector, OnScreen = Camera:WorldToViewportPoint(HumanoidRootPart_Position * CFrame.new(0, -HumanoidRootPart_Size.Y, 0).p)
-                        
-                        PickLine.Thickness = _G.PickThickness
-                        PickLine.Transparency = _G.PickTransparency
-                        PickLine.Color = _G.PickColor
-
-                        if _G.FromMouse == true and _G.FromCenter == false and _G.FromBottom == false then
-                            PickLine.From = Vector2.new(UserInputService:GetMouseLocation().X, UserInputService:GetMouseLocation().Y)
-                        elseif _G.FromMouse == false and _G.FromCenter == true and _G.FromBottom == false then
-                            PickLine.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
-                        elseif _G.FromMouse == false and _G.FromCenter == false and _G.FromBottom == true then
-                            PickLine.From = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y)
-                        end
-
-                        if OnScreen == true  then
-                            PickLine.To = Vector2.new(Vector.X, Vector.Y)
-                            if _G.TeamCheck == true then 
-                                if Players.LocalPlayer.Team ~= Player.Team then
-                                    PickLine.Visible = _G.PicksVisible
-                                else
-                                    PickLine.Visible = false
-                                end
-                            else
-                                PickLine.Visible = _G.PicksVisible
-                            end
-                        else
-                            PickLine.Visible = false
-                        end
-                    else
-                        PickLine.Visible = false
-                    end
-                end)
-
-                Players.PlayerRemoving:Connect(function()
-                    PickLine.Visible = false
-                end)
-            end
-        end)
-    end)
+    local Ray = Ray_new(Part1.Position, (Part2.Position - Part1.Position).Unit * 9999)
+    local part,position = workspace:FindPartOnRay(Ray, Part1.Parent)
+	if part then
+	    if part.Name == CheckPart.Name then
+	        CheckPart:Destroy()
+	        return true
+	    end
+	end
+	CheckPart:Destroy()
+	return false
 end
 
-UserInputService.TextBoxFocused:Connect(function()
-    Typing = true
-end)
-
-UserInputService.TextBoxFocusReleased:Connect(function()
-    Typing = false
-end)
-
-UserInputService.InputBegan:Connect(function(Input)
-    if Input.KeyCode == _G.ModeSkipKey and Typing == false then
-        if _G.FromMouse == true and _G.FromCenter == false and _G.FromBottom == false and _G.PicksVisible == true then
-            _G.FromCenter = false
-            _G.FromBottom = true
-            _G.FromMouse = false
-
-            if _G.SendNotifications == true then
-                game:GetService("StarterGui"):SetCore("SendNotification",{
-                    Title = "pick#6553";
-                    Text = "Picks will be now coming from the bottom of your screen (Mode 1)";
-                    Duration = 5;
-                })
-            end
-        elseif _G.FromMouse == false and _G.FromCenter == false and _G.FromBottom == true and _G.PicksVisible == true then
-            _G.FromCenter = true
-            _G.FromBottom = false
-            _G.FromMouse = false
-
-            if _G.SendNotifications == true then
-                game:GetService("StarterGui"):SetCore("SendNotification",{
-                    Title = "pick#6553";
-                    Text = "Picks will be now coming from the center of your screen (Mode 2)";
-                    Duration = 5;
-                })
-            end
-        elseif _G.FromMouse == false and _G.FromCenter == true and _G.FromBottom == false and _G.PicksVisible == true then
-            _G.FromCenter = false
-            _G.FromBottom = false
-            _G.FromMouse = true
-
-            if _G.SendNotifications == true then
-                game:GetService("StarterGui"):SetCore("SendNotification",{
-                    Title = "pick#6553";
-                    Text = "Picks will be now coming from the position of your mouse cursor on your screen (Mode 3)";
-                    Duration = 5;
-                })
-            end
-        end
-    elseif Input.KeyCode == _G.DisableKey and Typing == false then
-        _G.PicksVisible = not _G.PicksVisible
-        
-        if _G.SendNotifications == true then
-            game:GetService("StarterGui"):SetCore("SendNotification",{
-                Title = "pick#6553";
-                Text = "The Picks' visibility is now set to "..tostring(_G.PicksVisible)..".";
-                Duration = 5;
-            })
-        end
-    end
-end)
-
-if _G.DefaultSettings == true then
-    _G.TeamCheck = false
-    _G.FromMouse = false
-    _G.FromCenter = false
-    _G.FromBottom = true
-    _G.PicksVisible = true
-    _G.PickColor = Color3.fromRGB(40, 90, 255)
-    _G.PickThickness = 1
-    _G.PickTransparency = 0.5
-    _G.ModeSkipKey = Enum.KeyCode.E
-    _G.DisableKey = Enum.KeyCode.Q
+function GetLookVectorAndOrigin(PART)
+	local Origin = PART.CFrame
+	local LookVector = PART.CFrame.lookVector * 100
+	--local Direction = (LookVector - Origin.p).Unit * 100
+	
+	--local Ray = Ray.new(Origin.p, Direction)
+	--local _, EndPosition = workspace:FindPartOnRay(Ray)
+	
+	return {
+		Origin = Origin;
+		EndPoint = LookVector;--Workspace:Raycast(Origin, Direction.p).Position;
+	}
+end
+function Get8Corners(PART, OFF)
+	if not OFF then OFF = VEC3(1, 1, 1) end
+	local CornerVertices = {
+		{1, 1, -1},  --v1 - top front right
+		{1, -1, -1}, --v2 - bottom front right
+		{-1, -1, -1},--v3 - bottom front left
+		{-1, 1, -1}, --v4 - top front left
+		
+		{1, 1, 1},  --v5 - top back right
+		{1, -1, 1}, --v6 - bottom back right
+		{-1, -1, 1},--v7 - bottom back left
+		{-1, 1, 1}  --v8 - top back left
+	}
+	local Vertices = {}
+	local Size = PART.Size * OFF
+	for _, Vector in pairs(CornerVertices) do
+	    TBLINS(Vertices, (PART.CFrame * CFNEW(Size .X/2 * Vector[1], Size .Y/2 * Vector[2], Size .Z/2 * Vector[3])).Position)
+	end
+	return Vertices
 end
 
-local Success, Errored = pcall(function()
-    CreatePicks()
-end)
-
-if Success and not Errored then
-    if _G.SendNotifications == true then
-        game:GetService("StarterGui"):SetCore("SendNotification",{
-            Title = "pick#6553";
-            Text = "Pick script has successfully loaded.";
-            Duration = 5;
-        })
-    end
-elseif Errored and not Success then
-    if _G.SendNotifications == true then
-        game:GetService("StarterGui"):SetCore("SendNotification",{
-            Title = "pick#6553";
-            Text = "Pick script has errored while loading, please check the developer console! (F9)";
-            Duration = 5;
-        })
-    end
-    TestService:Message("The Pick script has errored, please notify Exunys with the following information :")
-    warn(Errored)
-    print("!! IF THE ERROR IS A FALSE POSITIVE (says that a player cannot be found) THEN DO NOT BOTHER !!")
+function tocam(pos)
+    local PosChar, withinScreenBounds = Camera:WorldToViewportPoint(pos)
+    return {VEC2(PosChar.X, PosChar.Y), withinScreenBounds}
 end
+function GetPropPC(inst, prop)
+	local func, result = pcall(function()
+		return inst[prop]
+	end)
+	if not func then
+		return nil 
+	else 
+		return result 
+	end
+end
+function Cleanup()
+	for i,v in pairs(Drawings) do
+		v:Remove()
+		--table.remove(Drawings, i)
+	end
+	Drawings = {}
+end
+function Create3DVertex(PART, SETT)
+	local VertexPositions = Get8Corners(PART, SETT.Offset)
+	for i,v in pairs(Get8Corners(PART, VEC3(0.01, 0.01, 0.01))) do
+		if not tocam(v)[2] then return end
+	end
+	local Thickness = SETT.Thickness
+	local Transparency = SETT.Transparency
+	local Visible = SETT.Visible
+	local Color = SETT.Color
+	local Filled = SETT.Filled
+	local Positions = {
+		{
+			tocam(VertexPositions[5])[1];
+			tocam(VertexPositions[6])[1];
+			tocam(VertexPositions[2])[1];
+			tocam(VertexPositions[1])[1];
+		};
+		{
+			tocam(VertexPositions[7])[1];
+			tocam(VertexPositions[8])[1];
+			tocam(VertexPositions[4])[1];
+			tocam(VertexPositions[3])[1];
+		};
+		{
+			tocam(VertexPositions[1])[1];
+			tocam(VertexPositions[2])[1];
+			tocam(VertexPositions[3])[1];
+			tocam(VertexPositions[4])[1];
+		};
+		{
+			tocam(VertexPositions[5])[1];
+			tocam(VertexPositions[6])[1];
+			tocam(VertexPositions[7])[1];
+			tocam(VertexPositions[8])[1];
+		};
+	}
+	
+	for i = 1,#Positions do
+		local NewVertex = CreateDrawing("Quad") {
+			["Visible"] = Visible;
+			["Transparency"] = Transparency;
+			["Thickness"] = Thickness;
+			["Color"] = Color;
+			["Filled"] = Filled;
+			["PointA"] = Positions[i][1];
+			["PointB"] = Positions[i][2];
+			["PointC"] = Positions[i][3];
+			["PointD"] = Positions[i][4];
+		}
+		Drawings[#Drawings + 1] = NewVertex
+	end
+end
+
+
+--[[ Initialize ESP ]]--
+spawn(function()
+	while true do
+		Cleanup()
+		
+		local func, ok = pcall(function()
+			for i,v in pairs(_G.PlayerLocation()) do
+				if v.Name ~= LocalPlayer.Name then
+					local Char = GetPropPC(v, "Character") or v or nil
+					local TeamCheck = (GetPropPC(v, "Team") ~= LocalPlayer.Team) or (GetPropPC(v, "TeamColor") ~= LocalPlayer.TeamColor) or (LocalPlayer.Team == nil)
+					if Char and TeamCheck then
+						local Root = Char:FindFirstChild("HumanoidRootPart") or nil
+						local Head = Char:FindFirstChild("Head") or nil
+						
+						if Root and Head and tocam(Head.Position)[2] then
+							--[[ Vertex ]]--
+							Create3DVertex(Root, {
+								["Offset"] = VEC3(2.25, 3, 3);
+								["Thickness"] = 1;
+								["Transparency"] = 1;
+								["Filled"] = false;
+								["Visible"] = true;
+								["Color"] = COL3(1,1,1);
+							}) 
+							
+							--[[ Health ]]--
+							Create3DVertex(Root, {
+								["Offset"] = VEC3(2.25, 3/100*Char.Humanoid.Health, 3);
+								["Thickness"] = 1;
+								["Transparency"] = 0.1;
+								["Filled"] = true;
+								["Visible"] = true;
+								["Color"] = COL3(0,1,0);
+							})
+							
+							--[[ Tracer ]]--
+							local ToCam = tocam(Head.Position)
+							if ToCam[2] then
+								local Mag = (LocalPlayer.Character.Head.Position - Head.Position).Magnitude
+								local NewLine = CreateDrawing("Line") {
+									["Visible"] = true;
+									["Transparency"] = 1;
+									["Thickness"] = 1;
+									["Color"] = RGB(255/Mag*255,255/255*Mag,0);
+									["From"] = VEC2(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y * 0.80);
+									["To"] = ToCam[1];
+								}
+								Drawings[#Drawings + 1] = NewLine
+							end
+	
+							--[[ OverHead ]]--
+							
+							--[[ IsVisible ]]--
+							local Color = COL3(1,0,0);
+							for i,v in pairs(Char:GetChildren()) do
+								if v:IsA("BasePart") then
+									if IsPartVisible(LocalPlayer.Character.Head, v) then
+										Color = COL3(0,1,0);
+									end
+								end
+							end
+							local PosPart = INSTNEW("Part")
+							PosPart.CFrame = Head.CFrame
+							PosPart.Size = VEC3(1,1,1)
+							PosPart.Transparency = 1
+							Create3DVertex(PosPart, {
+								["Offset"] = VEC3(1,1,1);
+								["Thickness"] = 1;
+								["Transparency"] = 1;
+								["Filled"] = false;
+								["Visible"] = true;
+								["Color"] = Color;
+							})
+							PosPart:Destroy()
+						end
+					end
+				end
+			end
+			return true
+		end)
+		if not func then warn(ok) end
+		
+		RunService.RenderStepped:Wait()
+	end
+end)
