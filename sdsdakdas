@@ -47,7 +47,7 @@ Title.BackgroundTransparency = 1.000
 Title.BorderSizePixel = 0
 Title.Position = UDim2.new(0.00298507465, 0, 0, 0)
 Title.Size = UDim2.new(0, 334, 0, 50)
-Title.Text = "IDK ULGY GUI Made By pick#6653"
+Title.Text = "IDK ULGY GUI lol"
 Title.TextColor3 = Color3.fromRGB(255, 255, 255)
 Title.TextSize = 18.000
 
