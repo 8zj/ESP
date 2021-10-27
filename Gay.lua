@@ -1943,26 +1943,11 @@ function library:CreateWindow(csize, cpos)
 
 	return window
 end
---[[
-game:GetService("UserInputService").InputChanged:connect(function(input)
-	pcall(function()
-	local MousePosition = UserInputService:GetMouseLocation()
-	
-    if input.UserInputType == Enum.UserInputType.MouseMovement then
-		if library.base.Window.Visible == true and library.pointers.SettingsPointerEnabled.value == true then
-			library.pointer.Visible = true
-			library.pointer.Position = UDim2.new(0, MousePosition.X, 0, MousePosition.Y - 36)
-		else
-			library.pointer.Visible = false
-        end
-	end
-	end)
-end)
---]]
+
 local function GetConfigs()
 	cfgs = {}
-	for i,v in pairs(syn_io_listdir("hexhub")) do
-		if v:sub(-10) == ".hexhubcfg" then
+	for i,v in pairs(syn_io_listdir("Pick Hub")) do
+		if v:sub(-10) == ".Pick Hubcfg" then
 			table.insert(cfgs, string.split(v, ".")[1]:sub(8))
 		end
 	end
