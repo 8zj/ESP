@@ -1,14 +1,13 @@
--- Hexagon UI Library
 local TweenService, RunService, UserInputService,gui,dragging,dragInput,dragStart,startPos,cpt,cpf,cppicking,cppickingVal,cppickingAlpha,cphue,cpsat,cpval,focused,highest,focusedBox = game:GetService("TweenService"),game:GetService("RunService"), game:GetService("UserInputService")
 local cpalpha = 0
 
--- Dragging
+
 local function updateDrag(input)
     local delta = input.Position - dragStart
     gui.Position = UDim2.new(0, startPos.X.Offset + delta.X, 0, startPos.Y.Offset + delta.Y)
 end
 
---color picker
+
 local function updateColorHue(input, obj, hue, sat)
 	hue = (obj.AbsoluteSize.X-(input.Position.X-obj.AbsolutePosition.X))/obj.AbsoluteSize.X
 	sat = (obj.AbsoluteSize.Y-(input.Position.Y-obj.AbsolutePosition.Y))/obj.AbsoluteSize.Y
@@ -158,7 +157,7 @@ local library = {
         guiname = "Pick Hub",
 		title = "Pick Hub [Paid]",
 		logo = "rbxassetid://4350178803", -- "http://www.roblox.com/asset/?id=6597976562",
-        footer = " Imagine pressing Copy Discord Invite.",
+        footer = " Join Are Discord In Settings [Paid Cheat]",
         modal = true,
         font = Enum.Font.SourceSans,
         textsize = 16,
