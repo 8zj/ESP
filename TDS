@@ -7,16 +7,6 @@ local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local LocalPlayer = Players.LocalPlayer
 
--- CLEANUP OLD STUFF
-local oldUIs = {"PickHub_Combined_System", "UITHINGSADAISMDAMDOS", "PickHub_Master"}
-for _, name in ipairs(oldUIs) do
-    local old = LocalPlayer:WaitForChild("PlayerGui"):FindFirstChild(name)
-    if old then old:Destroy() end
-end
-
-for _, obj in ipairs(Workspace:GetDescendants()) do
-    if obj:IsA("Dialog") or obj:IsA("DialogChoice") then obj:Destroy() end
-end
 
 -- HELPER: Create Skeet-Style Frames
 local function createSkeetFrame(name, parent, size, anchor, pos, isRounded)
