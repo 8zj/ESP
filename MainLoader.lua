@@ -13,14 +13,6 @@ TDS:GameInfo(map, modifiers) -- Selects the desired Map and Modifiers.
 TDS:VoteSkip() – Sends a skip request with a built-in retry loop.
 TDS:UseTimeScale(value) – Sets game speed (0.5 to 2). Requires tickets.
 --]]
-_G.AutoStrat = config.AutoStrat
-_G.antiAFK = config.antiAFK
-_G.AutoSkip = config.AutoSkip
-_G.AutoPickups = config.AutoPickups
-_G.SendWebhook = config.SendWebhook
-_G.AntiLag = config.AntiLag
-_G.Webhook = config.Webhook
-
 repeat 
     task.wait() 
 until game:IsLoaded()
