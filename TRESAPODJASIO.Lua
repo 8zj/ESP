@@ -727,7 +727,7 @@ local function log_match_start()
         avatar_url = "https://media.discordapp.net/attachments/1451836764498169958/1455879407792296052/standard3.gif?ex=695654db&is=6955035b&hm=0482d1e30ca82eeeffca09b1b233f2ba1c225592a3ddf4a7c10debf1b839238d&=",
         embeds = {{
             title = "🚀 **Session Kickoff!**",
-            description = "PHS is ready and loaded into a new match. 🎮\nSit back while the auto-strategy runs seamlessly!",
+            description = "ASE is ready and loaded into a new match. 🎮\nSit back while the auto-strategy runs seamlessly!",
             color = 0x3498db, -- blue theme
             thumbnail = { url = "https://media.discordapp.net/attachments/1451836764498169958/1455842221784830097/standard1.gif?ex=69563239&is=6954e0b9&hm=1214d2605c3138c291f6e315b3fa95808964f845b467b0a86ba0bd0ad1864803&=" }, -- banner GIF or image
             fields = {
@@ -748,7 +748,7 @@ local function log_match_start()
                 },
                 {
                     name = "💡 Tip",
-                    value = "PHS will handle your strategy automatically. Keep an eye on resources for maximum efficiency!",
+                    value = "ASE will handle your strategy automatically. Keep an eye on resources for maximum efficiency!",
                     inline = false
                 }
             },
