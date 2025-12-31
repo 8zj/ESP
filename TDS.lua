@@ -1,3 +1,46 @@
+--[[
+                                    NOT MADE BY ME I JUST MADE IT LITTLE BETTER? //
+
+
+Modes;
+Easy,Casual,Intermediate,Molten,Fallen,Frost,Pizza,ect so on.
+
+GameInfo;
+Map Name
+
+
+
+task.wait(10)
+-- Example Use; 
+_G.AutoStrat     = true
+_G.AutoSkip      = true
+_G.AutoPickups = true
+_G.AntiLag = true
+
+
+_G.SendWebhook   = false -- Set to true to enable notifications
+_G.Webhook       = "YOUR-WEBHOOK-URL-HERE" 
+
+local TDS = loadstring(game:HttpGet("https://raw.githubusercontent.com/8zj/ESP/refs/heads/main/TDS.lua"))()
+
+-- TDS:Loadout("Soldier", "Farm")
+-- TDS:Mode("Frost")
+-- TDS:GameInfo("Simplicity", {HiddenEnemies = true})
+
+-- TDS:UnlockTimeScale() <-- You may remove this if you don't want to use timescale tickets
+-- TDS:TimeScale(2) <-- You may remove this if you don't want to use timescale tickets
+
+--TDS:Place("Soldier", 10, 10, 10)
+--TDS:Equip("Scout")
+
+🎮 Match Control
+TDS:GameInfo(map, modifiers) -- Selects the desired Map and Modifiers.
+TDS:VoteSkip() – Sends a skip request with a built-in retry loop.
+TDS:UseTimeScale(value) – Sets game speed (0.5 to 2). Requires tickets.
+--]]
+
+
+
 repeat 
     task.wait() 
 until game:IsLoaded()
@@ -15,11 +58,11 @@ end
 
 if not isFullyLoaded() then
     repeat 
-        task.wait(5) 
+        task.wait(10) 
     until isFullyLoaded()
 end
 
-task.wait(5)
+task.wait(10)
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 local Stats = game:GetService("Stats")
@@ -517,7 +560,7 @@ local function run_vote_skip()
             remote_func:InvokeServer("Voting", "Skip")
         end)
         if success then 
-            _G.Log("Vote Skip casted", Color3.fromRGB(160, 220, 100))
+            _G.Log("Vote Skip", Color3.fromRGB(160, 220, 100))
             break 
         end
         task.wait(0.2)
