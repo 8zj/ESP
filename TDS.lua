@@ -15,11 +15,11 @@ end
 
 if not isFullyLoaded() then
     repeat 
-        task.wait(0.5) 
+        task.wait(5) 
     until isFullyLoaded()
 end
 
-task.wait(1)
+task.wait(5)
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 local Stats = game:GetService("Stats")
