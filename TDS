@@ -100,6 +100,152 @@ _G.Log = function(text, color)
     ContentFrame.CanvasPosition = Vector2.new(0, ContentFrame.AbsoluteCanvasSize.Y)
 end
 
+local RunService = game:GetService("RunService")
+local Stats = game:GetService("Stats")
+local TextService = game:GetService("TextService")
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+
+
+local function createSkeetFrame(name, parent, size, anchor, pos, isRounded)
+    local Outline = Instance.new("Frame")
+    Outline.Name = name
+    Outline.Parent = parent
+    Outline.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    Outline.BorderSizePixel = 0
+    Outline.AnchorPoint = anchor
+    Outline.Position = pos
+    Outline.Size = size
+
+    local MainFrame = Instance.new("Frame")
+    MainFrame.Parent = Outline
+    MainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
+    MainFrame.BorderSizePixel = 0
+    MainFrame.Position = UDim2.new(0, 1, 0, 1)
+    MainFrame.Size = UDim2.new(1, -2, 1, -2)
+
+    local InnerFrame = Instance.new("Frame")
+    InnerFrame.Parent = MainFrame
+    InnerFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    InnerFrame.BorderSizePixel = 0
+    InnerFrame.Position = UDim2.new(0, 2, 0, 2)
+    InnerFrame.Size = UDim2.new(1, -4, 1, -4)
+
+    local InnerFill = Instance.new("Frame")
+    InnerFill.Parent = InnerFrame
+    InnerFill.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+    InnerFill.BorderSizePixel = 0
+    InnerFill.Position = UDim2.new(0, 1, 0, 1)
+    InnerFill.Size = UDim2.new(1, -2, 1, -2)
+
+    local GreenLine1 = Instance.new("Frame")
+    GreenLine1.Size = UDim2.new(1, 0, 0, 1)
+    GreenLine1.BorderSizePixel = 0
+    GreenLine1.Parent = InnerFill
+
+    local GreenLine2 = Instance.new("Frame")
+    GreenLine2.Position = UDim2.new(0, 0, 0, 1)
+    GreenLine2.Size = UDim2.new(1, 0, 0, 1)
+    GreenLine2.BorderSizePixel = 0
+    GreenLine2.Parent = InnerFill
+
+    if isRounded then
+        local function round(obj)
+            local c = Instance.new("UICorner")
+            c.CornerRadius = UDim.new(0, 6)
+            c.Parent = obj
+        end
+        round(Outline)
+        round(MainFrame)
+        round(InnerFrame)
+        round(InnerFill)
+        round(GreenLine1)
+        round(GreenLine2)
+    end
+
+    return Outline, InnerFill, GreenLine1, GreenLine2
+end
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "PickHub_Combined_System"
+ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.ResetOnSpawn = false
+
+local customText = "PickHub [ Auto Strat ]"
+local currentDisplayTitle = ""
+local dummyText = customText .. "  |    FPS: 999    |    MS: 999ms"
+local tSize = TextService:GetTextSize(dummyText, 13, Enum.Font.Code, Vector2.new(10000, 26))
+
+local WM_Outline, WM_Fill, WM_L1, WM_L2 = createSkeetFrame("Watermark", ScreenGui, UDim2.new(0, tSize.X + 30, 0, 26), Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, 45), false)
+local WM_Label = Instance.new("TextLabel")
+WM_Label.Parent = WM_Fill
+WM_Label.BackgroundTransparency = 1
+WM_Label.Position = UDim2.new(0, 10, 0, 0)
+WM_Label.Size = UDim2.new(1, -10, 1, 0)
+WM_Label.Font = Enum.Font.Code
+WM_Label.TextColor3 = Color3.fromRGB(255, 255, 255)
+WM_Label.TextSize = 13
+WM_Label.TextXAlignment = Enum.TextXAlignment.Left
+WM_Label.TextStrokeTransparency = 0.8
+
+local HUD_Outline, HUD_Fill, HUD_L1, HUD_L2 = createSkeetFrame("BottomHUD", ScreenGui, UDim2.new(0, 480, 0, 36), Vector2.new(0.5, 1), UDim2.new(0.5, 0, 1, -100), true)
+local PlayerIcon = Instance.new("ImageLabel")
+PlayerIcon.Parent = HUD_Fill
+PlayerIcon.BackgroundTransparency = 1
+PlayerIcon.Position = UDim2.new(0, 10, 0.5, -12)
+PlayerIcon.Size = UDim2.new(0, 24, 0, 24)
+PlayerIcon.Image = Players:GetUserThumbnailAsync(LocalPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size420x420)
+local ic = Instance.new("UICorner") ic.CornerRadius = UDim.new(1, 0) ic.Parent = PlayerIcon
+
+local HUD_Label = Instance.new("TextLabel")
+HUD_Label.Parent = HUD_Fill
+HUD_Label.BackgroundTransparency = 1
+HUD_Label.Position = UDim2.new(0, 42, 0, 0)
+HUD_Label.Size = UDim2.new(1, -50, 1, 0)
+HUD_Label.Font = Enum.Font.Code
+HUD_Label.TextColor3 = Color3.fromRGB(255, 255, 255)
+HUD_Label.TextSize = 13
+HUD_Label.TextXAlignment = Enum.TextXAlignment.Left
+HUD_Label.TextStrokeTransparency = 0.8
+
+local function getIntStat(name)
+    local val = LocalPlayer:FindFirstChild(name)
+    return val and tostring(val.Value) or "0"
+end
+
+RunService.RenderStepped:Connect(function()
+    local hue = (tick() % 5) / 5
+    local c1, c2 = Color3.fromHSV(hue, 0.8, 1), Color3.fromHSV(hue, 0.8, 0.5)
+    WM_L1.BackgroundColor3 = c1 WM_L2.BackgroundColor3 = c2
+    HUD_L1.BackgroundColor3 = c1 HUD_L2.BackgroundColor3 = c2
+
+    local fps = math.floor(1 / RunService.RenderStepped:Wait())
+    local ping = math.floor(Stats.Network.ServerStatsItem["Data Ping"]:GetValue())
+    WM_Label.Text = currentDisplayTitle .. string.rep(" ", #customText - #currentDisplayTitle) .. "  |    FPS: " .. string.format("%-3d", fps) .. "    |    MS: " .. string.format("%-3d", ping) .. "ms"
+
+    local success, target = pcall(function() return LocalPlayer.PlayerGui.ReactUniversalHotbar.Frame.troops end)
+    if success and target and target.Visible then
+        HUD_Outline.Position = UDim2.new(0, target.AbsolutePosition.X + (target.AbsoluteSize.X / 2), 0, target.AbsolutePosition.Y - 5)
+    end
+    HUD_Label.Text = string.format("%s  |  LVL: %-3s  |  COINS: %-6s  |  GEMS: %-5s", LocalPlayer.Name, getIntStat("Level"), getIntStat("Coins"), getIntStat("Gems"))
+end)
+
+task.spawn(function()
+    local rng = Random.new()
+    while true do
+        for i = 1, #customText do
+            currentDisplayTitle = string.sub(customText, 1, i)
+            task.wait(rng:NextNumber(0.08, 0.12))
+        end
+        task.wait(3)
+        for i = #customText, 0, -1 do
+            currentDisplayTitle = string.sub(customText, 1, i)
+            task.wait(0.04)
+        end
+        task.wait(0.5)
+    end
+end)
+
 local function identify_game_state()
     local players = game:GetService("Players")
     local temp_player = players.LocalPlayer or players.PlayerAdded:Wait()
