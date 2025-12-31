@@ -12,7 +12,7 @@ Map Name
 TDS:GameInfo(map, modifiers) -- Selects the desired Map and Modifiers.
 TDS:VoteSkip() – Sends a skip request with a built-in retry loop.
 TDS:UseTimeScale(value) – Sets game speed (0.5 to 2). Requires tickets.
---]]
+--]]\n\ntask.wait(10)\nlocal config = {\n    AutoStrat = true,\n    antiAFK = true,\n    AutoSkip = false,\n    AutoPickups = false,\n    SendWebhook = true,\n    AntiLag = true,\n    Webhook = "https://discord.com/api/webhooks/1455563852929302591/TXkz1OTAdcPOHwdDDXJ4Jk6SR_RD6O5IqCKwAonh-at9scFjQpS40zKcoL4r5NJ4MZYG",\n    StratUrl = "https://raw.githubusercontent.com/8zj/ESP/refs/heads/main/Strat.lua"\n}\n\nlocal TDS = loadstring(game:HttpGet("https://raw.githubusercontent.com/8zj/ESP/refs/heads/main/MainLoader.lua"))()\n\nif config.StratUrl and config.AutoStrat then\n    local success, err = pcall(function()\n        local stratCode = game:HttpGet(config.StratUrl)\n        loadstring(stratCode)()\n    end)\n    if not success then\n        warn("Failed to load strat: " .. tostring(err))\n    end\nend\n\n_G.AutoStrat = config.AutoStrat\n_G.antiAFK = config.antiAFK\n_G.AutoSkip = config.AutoSkip\n_G.AutoPickups = config.AutoPickups\n_G.SendWebhook = config.SendWebhook\n_G.AntiLag = config.AntiLag\n_G.Webhook = config.Webhook
 repeat 
     task.wait() 
 until game:IsLoaded()
