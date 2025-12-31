@@ -7,8 +7,9 @@ local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local LocalPlayer = Players.LocalPlayer
 
+-- Removed the "Cleanup" and "Dialog" destruction logic as requested
 
--- HELPER: Create Skeet-Style Frames
+-- HELPER: Create Skeet-Style Frames (Fixed hierarchy)
 local function createSkeetFrame(name, parent, size, anchor, pos, isRounded)
     local Outline = Instance.new("Frame")
     Outline.Name = name
@@ -65,7 +66,7 @@ end
 
 -- MAIN GUI CONTAINER
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "PickHub_Master"
+ScreenGui.Name = "PickHub_Master_Fixed"
 ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 ScreenGui.ResetOnSpawn = false
 
@@ -132,9 +133,11 @@ local function applyESP(model)
     l.Font = Enum.Font.Code l.TextSize = 14 l.Text = model.Name
 end
 
-local NPCs = Workspace:WaitForChild("NPCs")
-for _, child in ipairs(NPCs:GetChildren()) do applyESP(child) end
-NPCs.ChildAdded:Connect(applyESP)
+local NPCs = Workspace:FindFirstChild("NPCs")
+if NPCs then
+    for _, child in ipairs(NPCs:GetChildren()) do applyESP(child) end
+    NPCs.ChildAdded:Connect(applyESP)
+end
 
 -- 6. MAIN RENDER LOOP
 local function getIntStat(name)
@@ -143,27 +146,29 @@ local function getIntStat(name)
 end
 
 local function countZombies()
+    local folder = Workspace:FindFirstChild("NPCs")
+    if not folder then return "nil" end
+    
     local c = 0
-    for _, child in ipairs(NPCs:GetChildren()) do
+    for _, child in ipairs(folder:GetChildren()) do
         if child:IsA("Model") and child.Name ~= "Red" and child.Name ~= "Blue" then c = c + 1 end
     end
-    return c
+    
+    return (c > 0) and tostring(c) or "nil"
 end
 
 local cam = Workspace.CurrentCamera
-local spawnLoc = Workspace:WaitForChild("Map"):WaitForChild("SpawnLocation")
+local spawnLoc = Workspace:FindFirstChild("Map") and Workspace.Map:FindFirstChild("SpawnLocation")
 
 RunService.RenderStepped:Connect(function()
     local hue = (tick() % 5) / 5
     local c1, c2 = Color3.fromHSV(hue, 0.8, 1), Color3.fromHSV(hue, 0.8, 0.5)
     
-    -- RGB Sync
     Console_L1.BackgroundColor3 = c1 Console_L2.BackgroundColor3 = c2
     WM_L1.BackgroundColor3 = c1 WM_L2.BackgroundColor3 = c2
     HUD_L1.BackgroundColor3 = c1 HUD_L2.BackgroundColor3 = c2
     Z_L1.BackgroundColor3 = c1 Z_L2.BackgroundColor3 = c2
 
-    -- Stats Update
     local fps = math.floor(1 / RunService.RenderStepped:Wait())
     local ping = math.floor(Stats.Network.ServerStatsItem["Data Ping"]:GetValue())
     WM_Label.Text = currentDisplayTitle .. string.rep(" ", #customText - #currentDisplayTitle) .. "  |    FPS: " .. string.format("%-3d", fps) .. "    |    MS: " .. string.format("%-3d", ping) .. "ms"
@@ -177,9 +182,10 @@ RunService.RenderStepped:Connect(function()
     Z_O.Position = UDim2.new(HUD_O.Position.X.Scale, HUD_O.Position.X.Offset, HUD_O.Position.Y.Scale, HUD_O.Position.Y.Offset - 45)
     Z_Label.Text = "Zombies: " .. countZombies()
 
-    -- Camera Lock
-    cam.CameraType = Enum.CameraType.Scriptable
-    cam.CFrame = CFrame.new(spawnLoc.Position + Vector3.new(0, 20, 0), spawnLoc.Position)
+    if spawnLoc then
+        cam.CameraType = Enum.CameraType.Scriptable
+        cam.CFrame = CFrame.new(spawnLoc.Position + Vector3.new(0, 20, 0), spawnLoc.Position)
+    end
 end)
 
 -- 7. WATERMARK ANIMATION
@@ -193,7 +199,10 @@ task.spawn(function()
     end
 end)
 
-_G.Log("PickHub loaded successfully!", Color3.fromRGB(0, 255, 0))
+_G.Log("PickHub Master Load Success", Color3.fromRGB(0, 255, 0))
+
+
+
 local function identify_game_state()
     local players = game:GetService("Players")
     local temp_player = players.LocalPlayer or players.PlayerAdded:Wait()
