@@ -1,5 +1,5 @@
 --[[
-                                    NOT MADE BY ME I JUST MADE IT LITTLE BETTER? //
+                                                                         NOT MADE BY ME I JUST MADE IT Have a  LITTLE BETTER ui? //
 
 
 Modes;
@@ -640,7 +640,7 @@ local function cast_modifier_vote(mods_table)
     }
 
     pcall(function()
-        _G.Log("Casting bulk modifier votes", Color3.fromRGB(100, 200, 255))
+        _G.Log("Picking Modifiers "..selected_mods, Color3.fromRGB(100, 200, 255))
         bulk_modifiers:InvokeServer(selected_mods)
     end)
 end
@@ -1050,6 +1050,7 @@ function TDS:Place(t_name, px, py, pz)
     end
 
     do_place_tower(t_name, Vector3.new(px, py, pz))
+    
 
     local new_t
     repeat
