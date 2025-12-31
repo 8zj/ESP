@@ -237,6 +237,101 @@ task.spawn(function()
     end
 end)
 
+
+local RunService = game:GetService("RunService")
+local workspace = game:GetService("Workspace")
+
+local spawnCount = 0 -- Keeps track of total zombies spawned
+
+local function createESP(target)
+    if target:FindFirstChild("adasadadda") then return end
+    
+    spawnCount = spawnCount + 1
+    local currentNumber = spawnCount
+
+    --// Clean Outline Effect
+    local highlight = Instance.new("Highlight")
+    highlight.Name = "adasadadda"
+    highlight.Parent = target
+    highlight.Adornee = target
+    highlight.FillTransparency = 1 
+    highlight.OutlineTransparency = 0 
+    highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+
+    --// Billboard for Name
+    local bgui = Instance.new("BillboardGui")
+    bgui.Name = "asdasdasdasdaas"
+    bgui.Parent = target
+    bgui.AlwaysOnTop = true
+    bgui.Size = UDim2.new(0, 200, 0, 30)
+    bgui.ExtentsOffset = Vector3.new(0, 1.2, 0) -- Adjusted height to sit right above head
+    bgui.MaxDistance = 400
+
+    local nameLabel = Instance.new("TextLabel", bgui)
+    nameLabel.Size = UDim2.new(1, 0, 1, 0)
+    nameLabel.BackgroundTransparency = 1
+    nameLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    nameLabel.Font = Enum.Font.Code
+    nameLabel.TextSize = 14
+    -- Format: [ Name ] [ #Count ]
+    nameLabel.Text = string.format("[ %s ] [ %d ]", target.Name, currentNumber)
+    nameLabel.RichText = true
+    
+    --// Dual Color UIStroke
+    local stroke = Instance.new("UIStroke", nameLabel)
+    stroke.Thickness = 2
+    local gradient = Instance.new("UIGradient", stroke)
+
+    --// Rainbow Animation Connection
+    local connection
+    connection = RunService.RenderStepped:Connect(function()
+        if not target or not target.Parent then
+            connection:Disconnect()
+            return
+        end
+        
+        local hue = (tick() % 4) / 4 -- Rainbow cycle speed
+        local rainbowColor = Color3.fromHSV(hue, 0.7, 1)
+        
+        highlight.OutlineColor = rainbowColor
+        
+        gradient.Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, rainbowColor),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
+        })
+    end)
+
+    --// Cleanup logic
+    task.spawn(function()
+        local humanoid = target:FindFirstChildOfClass("Humanoid")
+        while target and target.Parent do
+            if humanoid and humanoid.Health <= 0 then break end
+            task.wait(1)
+        end
+        if connection then connection:Disconnect() end
+        highlight:Destroy()
+        bgui:Destroy()
+    end)
+end
+
+--// Scan for Zombies
+task.spawn(function()
+    while true do
+        local npcFolder = workspace:FindFirstChild("NPCs")
+        if npcFolder then
+            for _, zombie in ipairs(npcFolder:GetChildren()) do
+                if zombie:IsA("Model") and not zombie:FindFirstChild("PickHub_ESP_Highlight") then
+                    if zombie:FindFirstChild("HumanoidRootPart") then
+                        createESP(zombie)
+                    end
+                end
+            end
+        end
+        task.wait()
+    end
+end)
+
+
 _G.Log("Loadded { PickHub }", Color3.fromRGB(200, 255, 200))
 
 local function identify_game_state()
