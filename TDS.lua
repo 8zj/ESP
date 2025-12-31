@@ -406,7 +406,7 @@ local function CreateSkeetWindow(title, size, position)
     return ListContainer
 end
 
-local SkeetList = CreateSkeetWindow("LOADOUT", UDim2.new(0, 190, 0, 160), UDim2.new(0.5, -495, 1, -240))
+local SkeetList = CreateSkeetWindow("LOADOUT", UDim2.new(0, 190, 0, 160), UDim2.new(0.5, -492, 1, -244))
 
 --// 2. Function to Refresh UI Labels
 local function UpdateUI(towerTable)
