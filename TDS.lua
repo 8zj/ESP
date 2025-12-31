@@ -330,6 +330,103 @@ task.spawn(function()
         task.wait()
     end
 end)
+local UIS = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local CoreGui = game:GetService("CoreGui")
+
+--// 1. Setup UI (Locked at Bottom-Left of HUD)
+if CoreGui:FindFirstChild("PickHub_SkeetList") then 
+    CoreGui.PickHub_SkeetList:Destroy() 
+end
+
+local ScreenGui = Instance.new("ScreenGui", CoreGui)
+ScreenGui.Name = "PickHub_SkeetList"
+
+local function CreateSkeetWindow(title, size, position)
+    local MainFrame = Instance.new("Frame", ScreenGui)
+    MainFrame.Size = size
+    MainFrame.Position = position 
+    MainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+    MainFrame.BorderSizePixel = 0
+    
+    local Outline = Instance.new("UIStroke", MainFrame)
+    Outline.Color = Color3.fromRGB(0, 0, 0)
+    Outline.Thickness = 2
+    
+    local InnerBorder = Instance.new("Frame", MainFrame)
+    InnerBorder.Size = UDim2.new(1, -4, 1, -4)
+    InnerBorder.Position = UDim2.new(0, 2, 0, 2)
+    InnerBorder.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    InnerBorder.BorderSizePixel = 0
+    
+    local ContentFill = Instance.new("Frame", InnerBorder)
+    ContentFill.Size = UDim2.new(1, -2, 1, -2)
+    ContentFill.Position = UDim2.new(0, 1, 0, 1)
+    ContentFill.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+    ContentFill.BorderSizePixel = 0
+
+    local GreenLine = Instance.new("Frame", ContentFill)
+    GreenLine.Size = UDim2.new(1, 0, 0, 1)
+    GreenLine.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+    
+    local WhiteLine = Instance.new("Frame", ContentFill)
+    WhiteLine.Size = UDim2.new(1, 0, 0, 1)
+    WhiteLine.Position = UDim2.new(0, 0, 0, 1)
+    WhiteLine.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+
+    local Title = Instance.new("TextLabel", ContentFill)
+    Title.Size = UDim2.new(1, 0, 0, 28)
+    Title.BackgroundTransparency = 1
+    Title.Text = title
+    Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Title.Font = Enum.Font.Code
+    Title.TextSize = 13
+    local TitleGrad = Instance.new("UIGradient", Title)
+
+    local ListContainer = Instance.new("Frame", ContentFill)
+    ListContainer.Name = "Container"
+    ListContainer.Size = UDim2.new(1, -20, 1, -35)
+    ListContainer.Position = UDim2.new(0.5, 0, 0, 32)
+    ListContainer.AnchorPoint = Vector2.new(0.5, 0)
+    ListContainer.BackgroundTransparency = 1
+    
+    local Layout = Instance.new("UIListLayout", ListContainer)
+    Layout.Padding = UDim.new(0, 6)
+
+    RunService.RenderStepped:Connect(function()
+        local t = tick()
+        local glow = (math.sin(t * 5) + 1) / 2
+        TitleGrad.Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 255, 0)), 
+            ColorSequenceKeypoint.new(glow, Color3.fromRGB(255, 255, 255)), 
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 200, 0))
+        })
+    end)
+
+    return ListContainer
+end
+
+local SkeetList = CreateSkeetWindow("LOADOUT", UDim2.new(0, 190, 0, 160), UDim2.new(0.5, -495, 1, -240))
+
+--// 2. Function to Refresh UI Labels
+local function UpdateUI(towerTable)
+    SkeetList:ClearAllChildren()
+    Instance.new("UIListLayout", SkeetList).Padding = UDim.new(0, 6)
+    
+    for i = 1, 5 do
+        local name = towerTable[i] or "None"
+        local Label = Instance.new("TextLabel", SkeetList)
+        Label.Size = UDim2.new(1, 0, 0, 18)
+        Label.BackgroundTransparency = 1
+        Label.RichText = true
+        Label.Text = string.format("<Font color='#FFFFFF'>[ %d ] %s</Font>", i, name)
+        Label.Font = Enum.Font.Code
+        Label.TextSize = 12
+        Label.TextXAlignment = Enum.TextXAlignment.Left
+    end
+end
+
+
 
 
 _G.Log("Loadded { PickHub }", Color3.fromRGB(200, 255, 200))
@@ -1026,15 +1123,12 @@ function TDS:Mode(difficulty)
 end
 
 function TDS:Loadout(...)
-    if game_state ~= "LOBBY" then
-        return false
-    end
-
-    local lobby_hud = player_gui:WaitForChild("ReactLobbyHud", 30)
-    local frame = lobby_hud:WaitForChild("Frame", 30)
-    frame:WaitForChild("matchmaking", 30)
-
     local towers = {...}
+    _G.CurrentLoadout = towers
+    UpdateUI(towers)
+    
+    if game_state ~= "LOBBY" then return false end
+
     local remote = game:GetService("ReplicatedStorage"):WaitForChild("RemoteFunction")
 
     for _, tower_name in ipairs(towers) do
@@ -1045,7 +1139,6 @@ function TDS:Loadout(...)
                     remote:InvokeServer("Inventory", "Equip", "tower", tower_name)
                 end)
                 if ok then
-                    _G.Log("Equipped Tower: " .. tostring(tower_name), Color3.fromRGB(160, 220, 100))
                     success = true
                 else
                     task.wait(0.2)
@@ -1054,7 +1147,6 @@ function TDS:Loadout(...)
             task.wait(0.4)
         end
     end
-
     return true
 end
 
