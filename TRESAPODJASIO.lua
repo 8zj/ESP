@@ -1109,6 +1109,7 @@ function TDS:Mode(difficulty)
     if match_making then
     local remote = game:GetService("ReplicatedStorage"):WaitForChild("RemoteFunction")
     local success = false
+    _G.Log("Selecting Mode: " .. tostring(difficulty), Color3.fromRGB(100, 200, 255))
     local res
         repeat
             local ok, result = pcall(function()
@@ -1134,6 +1135,7 @@ function TDS:Mode(difficulty)
 
             if ok and check_res_ok(result) then
                 success = true
+                _G.Log("Successfully joined matchmaking: " .. tostring(difficulty), Color3.fromRGB(160, 220, 100))
                 res = result
             else
                 task.wait(0.5) 
