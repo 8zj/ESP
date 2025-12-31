@@ -1,13 +1,14 @@
 if not game:IsLoaded() then game.Loaded:Wait() end
-task.wait(5)
+task.wait(15)
 local RunService = game:GetService("RunService")
 local Stats = game:GetService("Stats")
-local TextService = game:GetService("TextService")
 local Players = game:GetService("Players")
 local workspace = game:GetService("Workspace")
 local LocalPlayer = Players.LocalPlayer
 
-local function createSkeetFrame(name, parent, size, anchor, pos, isRounded)
+
+-- 2. UI BUILDER
+local function createSkeetFrame(name, parent, size, anchor, pos)
     local Outline = Instance.new("Frame")
     Outline.Name = name
     Outline.Parent = parent
@@ -38,142 +39,96 @@ local function createSkeetFrame(name, parent, size, anchor, pos, isRounded)
     InnerFill.Position = UDim2.new(0, 1, 0, 1)
     InnerFill.Size = UDim2.new(1, -2, 1, -2)
 
-    local GreenLine1 = Instance.new("Frame")
-    GreenLine1.Size = UDim2.new(1, 0, 0, 1)
-    GreenLine1.BorderSizePixel = 0
-    GreenLine1.Parent = InnerFill
+    local L1 = Instance.new("Frame")
+    L1.Size = UDim2.new(1, 0, 0, 1)
+    L1.BorderSizePixel = 0
+    L1.Parent = InnerFill
 
-    local GreenLine2 = Instance.new("Frame")
-    GreenLine2.Position = UDim2.new(0, 0, 0, 1)
-    GreenLine2.Size = UDim2.new(1, 0, 0, 1)
-    GreenLine2.BorderSizePixel = 0
-    GreenLine2.Parent = InnerFill
+    local L2 = Instance.new("Frame")
+    L2.Position = UDim2.new(0, 0, 0, 1)
+    L2.Size = UDim2.new(1, 0, 0, 1)
+    L2.BorderSizePixel = 0
+    L2.Parent = InnerFill
 
-    if isRounded then
-        local function round(obj)
-            local c = Instance.new("UICorner")
-            c.CornerRadius = UDim.new(0, 6)
-            c.Parent = obj
-        end
-        round(Outline)
-        round(MainFrame)
-        round(InnerFrame)
-        round(InnerFill)
-        round(GreenLine1)
-        round(GreenLine2)
+    local function round(obj)
+        local c = Instance.new("UICorner")
+        c.CornerRadius = UDim.new(0, 6)
+        c.Parent = obj
     end
+    round(Outline) round(MainFrame) round(InnerFrame) round(InnerFill) round(L1) round(L2)
 
-    return Outline, InnerFill, GreenLine1, GreenLine2
+    return Outline, InnerFill, L1, L2
 end
 
 local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Name = "PickHub_Combined_System"
-ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+ScreenGui.Name = "PickHub_Main_UI"
+ScreenGui.Parent = pGui
 ScreenGui.ResetOnSpawn = false
 
+-- 3. GAME STATE
+local gameState = "Lobby"
+task.spawn(function()
+    while true do
+        if pGui:FindFirstChild("LobbyGui") then
+            gameState = "In Lobby"
+        elseif pGui:FindFirstChild("GameGui") then
+            gameState = "In Game"
+        end
+        task.wait(1)
+    end
+end)
+
+-- 4. TOP WATERMARK
 local customText = "PickHub [ Auto Strat ]"
 local currentDisplayTitle = ""
-local dummyText = customText .. "  |    FPS: 999    |    MS: 999ms"
-local tSize = TextService:GetTextSize(dummyText, 13, Enum.Font.Code, Vector2.new(10000, 26))
+local WM_O, WM_F, WM_L1, WM_L2 = createSkeetFrame("Watermark", ScreenGui, UDim2.new(0, 500, 0, 30), Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, 45))
+local WM_Label = Instance.new("TextLabel", WM_F)
+WM_Label.BackgroundTransparency = 1 WM_Label.Position = UDim2.new(0, 12, 0, 0) WM_Label.Size = UDim2.new(1, -24, 1, 0)
+WM_Label.Font = Enum.Font.Code WM_Label.TextColor3 = Color3.fromRGB(255, 255, 255) WM_Label.TextSize = 13 WM_Label.TextXAlignment = Enum.TextXAlignment.Left
 
-local WM_Outline, WM_Fill, WM_L1, WM_L2 = createSkeetFrame("Watermark", ScreenGui, UDim2.new(0, tSize.X + 30, 0, 26), Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, 45), false)
-local WM_Label = Instance.new("TextLabel")
-WM_Label.Parent = WM_Fill
-WM_Label.BackgroundTransparency = 1
-WM_Label.Position = UDim2.new(0, 10, 0, 0)
-WM_Label.Size = UDim2.new(1, -10, 1, 0)
-WM_Label.Font = Enum.Font.Code
-WM_Label.TextColor3 = Color3.fromRGB(255, 255, 255)
-WM_Label.TextSize = 13
-WM_Label.TextXAlignment = Enum.TextXAlignment.Left
-WM_Label.TextStrokeTransparency = 0.8
+-- 5. BOTTOM HUD (Icon Restored)
+local HUD_O, HUD_F, HUD_L1, HUD_L2 = createSkeetFrame("BottomHUD", ScreenGui, UDim2.new(0, 480, 0, 36), Vector2.new(0.5, 1), UDim2.new(0.5, 0, 1, -100))
 
-local HUD_Outline, HUD_Fill, HUD_L1, HUD_L2 = createSkeetFrame("BottomHUD", ScreenGui, UDim2.new(0, 480, 0, 36), Vector2.new(0.5, 1), UDim2.new(0.5, 0, 1, -100), true)
-local PlayerIcon = Instance.new("ImageLabel")
-PlayerIcon.Parent = HUD_Fill
+local PlayerIcon = Instance.new("ImageLabel", HUD_F)
 PlayerIcon.BackgroundTransparency = 1
-PlayerIcon.Position = UDim2.new(0, 10, 0.5, -12)
+PlayerIcon.Position = UDim2.new(0, 8, 0.5, -12)
 PlayerIcon.Size = UDim2.new(0, 24, 0, 24)
 PlayerIcon.Image = Players:GetUserThumbnailAsync(LocalPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size420x420)
-local ic = Instance.new("UICorner") ic.CornerRadius = UDim.new(1, 0) ic.Parent = PlayerIcon
+local ic = Instance.new("UICorner", PlayerIcon) ic.CornerRadius = UDim.new(1, 0)
 
-local HUD_Label = Instance.new("TextLabel")
-HUD_Label.Parent = HUD_Fill
-HUD_Label.BackgroundTransparency = 1
-HUD_Label.Position = UDim2.new(0, 42, 0, 0)
+local HUD_Label = Instance.new("TextLabel", HUD_F)
+HUD_Label.BackgroundTransparency = 1 
+HUD_Label.Position = UDim2.new(0, 40, 0, 0)
 HUD_Label.Size = UDim2.new(1, -50, 1, 0)
-HUD_Label.Font = Enum.Font.Code
-HUD_Label.TextColor3 = Color3.fromRGB(255, 255, 255)
-HUD_Label.TextSize = 13
-HUD_Label.TextXAlignment = Enum.TextXAlignment.Left
-HUD_Label.TextStrokeTransparency = 0.8
+HUD_Label.Font = Enum.Font.Code HUD_Label.TextColor3 = Color3.fromRGB(255, 255, 255) HUD_Label.TextSize = 13 HUD_Label.TextXAlignment = Enum.TextXAlignment.Left
 
-local Z_Outline, Z_Fill, Z_L1, Z_L2 = createSkeetFrame("ZombieCounter", ScreenGui, UDim2.new(0, 140, 0, 30), Vector2.new(0.5, 1), UDim2.new(0.5, 0, 1, -150), true)
-local Z_Label = Instance.new("TextLabel")
-Z_Label.Parent = Z_Fill
-Z_Label.BackgroundTransparency = 1
-Z_Label.Size = UDim2.new(1, 0, 1, 0)
-Z_Label.Font = Enum.Font.Code
-Z_Label.TextColor3 = Color3.fromRGB(255, 255, 255)
-Z_Label.TextSize = 14
-Z_Label.TextStrokeTransparency = 0.8
+-- 6. ZOMBIE COUNTER
+local Z_O, Z_F, Z_L1, Z_L2 = createSkeetFrame("ZombieCounter", ScreenGui, UDim2.new(0, 140, 0, 30), Vector2.new(0.5, 1), UDim2.new(0.5, 0, 1, -150))
+local Z_Label = Instance.new("TextLabel", Z_F)
+Z_Label.BackgroundTransparency = 1 Z_Label.Size = UDim2.new(1, 0, 1, 0) Z_Label.Font = Enum.Font.Code Z_Label.TextColor3 = Color3.fromRGB(255, 255, 255) Z_Label.TextSize = 14
+
 
 local function getIntStat(name)
-    local val = LocalPlayer:FindFirstChild(name)
-    return val and tostring(val.Value) or "0"
+    local stat = LocalPlayer:FindFirstChild(name)
+    if not stat then
+        local ls = LocalPlayer:FindFirstChild("leaderstats")
+        if ls then stat = ls:FindFirstChild(name) end
+    end
+    
+    return stat and tostring(stat.Value) or "0"
 end
 
 local function countZombies()
     local folder = workspace:FindFirstChild("NPCs")
-    -- CHECK: If folder is missing, return string "nil"
-    if not folder then return "nil" end 
-    
+    if not folder then return "nil" end
     local count = 0
     for _, child in ipairs(folder:GetChildren()) do
         if child:IsA("Model") and child.Name ~= "Red" and child.Name ~= "Blue" then
             count = count + 1
         end
     end
-    return count
+    return (count > 0) and tostring(count) or "nil"
 end
-
-local function applyESP(model)
-    if not model:IsA("Model") or model.Name == "Red" or model.Name == "Blue" then return end
-    local h = model:FindFirstChild("ESPHighlight") or Instance.new("Highlight")
-    h.Name = "ESPHighlight"
-    h.FillTransparency = 1
-    h.OutlineColor = Color3.fromRGB(255, 255, 255)
-    h.Adornee = model
-    h.Parent = model
-
-    local b = model:FindFirstChild("NPCNameTag") or Instance.new("BillboardGui")
-    b.Name = "NPCNameTag"
-    b.Size = UDim2.new(0, 200, 0, 50)
-    b.StudsOffset = Vector3.new(0, 3, 0)
-    b.AlwaysOnTop = true
-    b.Adornee = model:FindFirstChild("Head") or model.PrimaryPart or model:FindFirstChildWhichIsA("BasePart")
-    b.Parent = model
-
-    local l = b:FindFirstChild("TextLabel") or Instance.new("TextLabel")
-    l.Size = UDim2.new(1, 0, 1, 0)
-    l.BackgroundTransparency = 1
-    l.Text = model.Name
-    l.TextColor3 = Color3.fromRGB(255, 255, 255)
-    l.Font = Enum.Font.Code
-    l.TextSize = 14
-    l.Parent = b
-end
-
--- Initialize ESP safely
-local npcsFolder = workspace:FindFirstChild("NPCs")
-if npcsFolder then
-    for _, child in ipairs(npcsFolder:GetChildren()) do applyESP(child) end
-    npcsFolder.ChildAdded:Connect(applyESP)
-end
-
-local cam = workspace.CurrentCamera
-local map = workspace:FindFirstChild("Map")
-local spawnLoc = map and map:FindFirstChild("SpawnLocation")
 
 RunService.RenderStepped:Connect(function()
     local hue = (tick() % 5) / 5
@@ -184,40 +139,33 @@ RunService.RenderStepped:Connect(function()
 
     local fps = math.floor(1 / RunService.RenderStepped:Wait())
     local ping = math.floor(Stats.Network.ServerStatsItem["Data Ping"]:GetValue())
-    WM_Label.Text = currentDisplayTitle .. string.rep(" ", #customText - #currentDisplayTitle) .. "  |    FPS: " .. string.format("%-3d", fps) .. "    |    MS: " .. string.format("%-3d", ping) .. "ms"
-
-    local success, target = pcall(function() return LocalPlayer.PlayerGui.ReactUniversalHotbar.Frame.troops end)
-    if success and target and target.Visible then
-        HUD_Outline.Position = UDim2.new(0, target.AbsolutePosition.X + (target.AbsoluteSize.X / 2), 0, target.AbsolutePosition.Y - 5)
-    end
-    HUD_Label.Text = string.format("%s  |  LVL: %-3s  |  COINS: %-6s  |  GEMS: %-5s", LocalPlayer.Name, getIntStat("Level"), getIntStat("Coins"), getIntStat("Gems"))
     
-    Z_Outline.Position = UDim2.new(HUD_Outline.Position.X.Scale, HUD_Outline.Position.X.Offset, HUD_Outline.Position.Y.Scale, HUD_Outline.Position.Y.Offset - 45)
-    Z_Label.Text = "Zombies: " .. tostring(countZombies())
+    WM_Label.Text = string.format("%s  |  Server; %s  |  FPS; %d  ", 
+        currentDisplayTitle .. string.rep(" ", #customText - #currentDisplayTitle), 
+        gameState, fps, ping)
 
-    -- Update camera safely
-    if spawnLoc then
-        cam.CameraType = Enum.CameraType.Scriptable
-        cam.CFrame = CFrame.new(spawnLoc.Position + Vector3.new(0, 20, 0), spawnLoc.Position)
+    local success, target = pcall(function() return pGui.ReactUniversalHotbar.Frame.troops end)
+    if success and target and target.Visible then
+        HUD_O.Position = UDim2.new(0, target.AbsolutePosition.X + (target.AbsoluteSize.X / 2), 0, target.AbsolutePosition.Y - 5)
+    else
+        HUD_O.Position = UDim2.new(0.5, 0, 1, -100)
     end
+    
+    HUD_Label.Text = string.format("%s  |  Level; %s  |  Coins; %s  |  Gems; %s", LocalPlayer.Name, getIntStat("Level"), getIntStat("Coins"), getIntStat("Gems"))
+    Z_O.Position = UDim2.new(HUD_O.Position.X.Scale, HUD_O.Position.X.Offset, HUD_O.Position.Y.Scale, HUD_O.Position.Y.Offset - 45)
+    Z_Label.Text = "Zombies; " .. countZombies()
 end)
 
+-- 8. TEXT ANIMATION
 task.spawn(function()
     local rng = Random.new()
     while true do
-        for i = 1, #customText do
-            currentDisplayTitle = string.sub(customText, 1, i)
-            task.wait(rng:NextNumber(0.08, 0.12))
-        end
+        for i = 1, #customText do currentDisplayTitle = string.sub(customText, 1, i) task.wait(rng:NextNumber(0.08, 0.12)) end
         task.wait(3)
-        for i = #customText, 0, -1 do
-            currentDisplayTitle = string.sub(customText, 1, i)
-            task.wait(0.04)
-        end
+        for i = #customText, 0, -1 do currentDisplayTitle = string.sub(customText, 1, i) task.wait(0.04) end
         task.wait(0.5)
     end
 end)
-
 
 _G.Log("PickHub Master Load Success", Color3.fromRGB(0, 255, 0))
 
@@ -298,7 +246,7 @@ local start_coins, current_total_coins, start_gems, current_total_gems = 0, 0, 0
 if game_state == "GAME" then
     pcall(function()
         repeat task.wait(1) until local_player:FindFirstChild("Coins")
-        _G.Log("Current Money: $" .. local_player.Coins.Value, Color3.fromRGB(253, 253, 253))
+        _G.Log("Current Coins: $" .. local_player.Coins.Value, Color3.fromRGB(253, 253, 253))
         start_coins = local_player.Coins.Value
         current_total_coins = start_coins
         start_gems = local_player.Gems.Value
