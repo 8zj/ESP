@@ -1,13 +1,37 @@
-if not game:IsLoaded() then game.Loaded:Wait() end
-task.wait(15)
+repeat 
+    task.wait() 
+until game:IsLoaded()
+
+local player = game:GetService("Players").LocalPlayer
+local pGui = player:WaitForChild("PlayerGui")
+
+local function isFullyLoaded()
+    local hud = pGui:FindFirstChild("GameGui") or pGui:FindFirstChild("LobbyGui")
+    if hud and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        return true
+    end
+    return false
+end
+
+if not isFullyLoaded() then
+    repeat 
+        task.wait(0.5) 
+    until isFullyLoaded()
+end
+
+task.wait(1)
 local RunService = game:GetService("RunService")
-local Stats = game:GetService("Stats")
 local Players = game:GetService("Players")
+local Stats = game:GetService("Stats")
 local workspace = game:GetService("Workspace")
 local LocalPlayer = Players.LocalPlayer
+local pGui = LocalPlayer:WaitForChild("PlayerGui")
 
+--// Cleanup
+for _, ui in ipairs(pGui:GetChildren()) do
+    if ui.Name == "PickHub_Main_UI" then ui:Destroy() end
+end
 
--- 2. UI BUILDER
 local function createSkeetFrame(name, parent, size, anchor, pos)
     local Outline = Instance.new("Frame")
     Outline.Name = name
@@ -20,14 +44,14 @@ local function createSkeetFrame(name, parent, size, anchor, pos)
 
     local MainFrame = Instance.new("Frame")
     MainFrame.Parent = Outline
-    MainFrame.BackgroundColor3 = Color3.fromRGB(12, 12, 12)
+    MainFrame.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
     MainFrame.BorderSizePixel = 0
     MainFrame.Position = UDim2.new(0, 1, 0, 1)
     MainFrame.Size = UDim2.new(1, -2, 1, -2)
 
     local InnerFrame = Instance.new("Frame")
     InnerFrame.Parent = MainFrame
-    InnerFrame.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+    InnerFrame.BackgroundColor3 = Color3.fromRGB(80, 80, 80) 
     InnerFrame.BorderSizePixel = 0
     InnerFrame.Position = UDim2.new(0, 2, 0, 2)
     InnerFrame.Size = UDim2.new(1, -4, 1, -4)
@@ -52,10 +76,10 @@ local function createSkeetFrame(name, parent, size, anchor, pos)
 
     local function round(obj)
         local c = Instance.new("UICorner")
-        c.CornerRadius = UDim.new(0, 6)
+        c.CornerRadius = UDim.new(0, 3)
         c.Parent = obj
     end
-    round(Outline) round(MainFrame) round(InnerFrame) round(InnerFill) round(L1) round(L2)
+    round(Outline) round(MainFrame) round(InnerFrame) round(InnerFill)
 
     return Outline, InnerFill, L1, L2
 end
@@ -63,113 +87,114 @@ end
 local ScreenGui = Instance.new("ScreenGui")
 ScreenGui.Name = "PickHub_Main_UI"
 ScreenGui.Parent = pGui
+ScreenGui.IgnoreGuiInset = true
 ScreenGui.ResetOnSpawn = false
 
--- 3. GAME STATE
-local gameState = "Lobby"
-task.spawn(function()
-    while true do
-        if pGui:FindFirstChild("LobbyGui") then
-            gameState = "In Lobby"
-        elseif pGui:FindFirstChild("GameGui") then
-            gameState = "In Game"
-        end
-        task.wait(1)
-    end
-end)
-
--- 4. TOP WATERMARK
-local customText = "PickHub [ Auto Strat ]"
-local currentDisplayTitle = ""
-local WM_O, WM_F, WM_L1, WM_L2 = createSkeetFrame("Watermark", ScreenGui, UDim2.new(0, 500, 0, 30), Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, 45))
+--// TOP WATERMARK
+local WM_O, WM_F, WM_L1, WM_L2 = createSkeetFrame("Watermark", ScreenGui, UDim2.new(0, 320, 0, 30), Vector2.new(0.5, 0), UDim2.new(0.5, 0, 0, 40))
 local WM_Label = Instance.new("TextLabel", WM_F)
-WM_Label.BackgroundTransparency = 1 WM_Label.Position = UDim2.new(0, 12, 0, 0) WM_Label.Size = UDim2.new(1, -24, 1, 0)
-WM_Label.Font = Enum.Font.Code WM_Label.TextColor3 = Color3.fromRGB(255, 255, 255) WM_Label.TextSize = 13 WM_Label.TextXAlignment = Enum.TextXAlignment.Left
+WM_Label.BackgroundTransparency = 1 WM_Label.Size = UDim2.new(1, 0, 1, 0)
+WM_Label.Font = Enum.Font.Code WM_Label.TextColor3 = Color3.fromRGB(255, 255, 255) WM_Label.TextSize = 14 WM_Label.TextXAlignment = Enum.TextXAlignment.Center
 
--- 5. BOTTOM HUD (Icon Restored)
-local HUD_O, HUD_F, HUD_L1, HUD_L2 = createSkeetFrame("BottomHUD", ScreenGui, UDim2.new(0, 480, 0, 36), Vector2.new(0.5, 1), UDim2.new(0.5, 0, 1, -100))
-
-local PlayerIcon = Instance.new("ImageLabel", HUD_F)
-PlayerIcon.BackgroundTransparency = 1
-PlayerIcon.Position = UDim2.new(0, 8, 0.5, -12)
-PlayerIcon.Size = UDim2.new(0, 24, 0, 24)
-PlayerIcon.Image = Players:GetUserThumbnailAsync(LocalPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size420x420)
-local ic = Instance.new("UICorner", PlayerIcon) ic.CornerRadius = UDim.new(1, 0)
-
+--// BOTTOM HUD (Clean Layout)
+local HUD_O, HUD_F, HUD_L1, HUD_L2 = createSkeetFrame("BottomHUD", ScreenGui, UDim2.new(0, 580, 0, 34), Vector2.new(0.5, 1), UDim2.new(0.5, 0, 1, -130))
 local HUD_Label = Instance.new("TextLabel", HUD_F)
-HUD_Label.BackgroundTransparency = 1 
-HUD_Label.Position = UDim2.new(0, 40, 0, 0)
-HUD_Label.Size = UDim2.new(1, -50, 1, 0)
+HUD_Label.BackgroundTransparency = 1 HUD_Label.Position = UDim2.new(0, 45, 0, 0) HUD_Label.Size = UDim2.new(1, -55, 1, 0)
 HUD_Label.Font = Enum.Font.Code HUD_Label.TextColor3 = Color3.fromRGB(255, 255, 255) HUD_Label.TextSize = 13 HUD_Label.TextXAlignment = Enum.TextXAlignment.Left
 
--- 6. ZOMBIE COUNTER
-local Z_O, Z_F, Z_L1, Z_L2 = createSkeetFrame("ZombieCounter", ScreenGui, UDim2.new(0, 140, 0, 30), Vector2.new(0.5, 1), UDim2.new(0.5, 0, 1, -150))
-local Z_Label = Instance.new("TextLabel", Z_F)
-Z_Label.BackgroundTransparency = 1 Z_Label.Size = UDim2.new(1, 0, 1, 0) Z_Label.Font = Enum.Font.Code Z_Label.TextColor3 = Color3.fromRGB(255, 255, 255) Z_Label.TextSize = 14
+local PlayerIcon = Instance.new("ImageLabel", HUD_F)
+PlayerIcon.BackgroundTransparency = 1 PlayerIcon.Position = UDim2.new(0, 10, 0.5, -11) PlayerIcon.Size = UDim2.new(0, 22, 0, 22)
+PlayerIcon.Image = Players:GetUserThumbnailAsync(LocalPlayer.UserId, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size420x420)
+Instance.new("UICorner", PlayerIcon).CornerRadius = UDim.new(1, 0)
 
+--// CONSOLE (PickLogger Center)
+local Console_O, Console_F, Console_L1, Console_L2 = createSkeetFrame("Console", ScreenGui, UDim2.new(0, 450, 0, 250), Vector2.new(1, 1), UDim2.new(1, -20, 1, -20))
+local PickLabel = Instance.new("TextLabel", Console_F) 
+PickLabel.Size = UDim2.new(1, 0, 0, 30) PickLabel.Position = UDim2.new(0, 0, 0, 8)
+PickLabel.BackgroundTransparency = 1 PickLabel.Font = Enum.Font.Code PickLabel.TextSize = 18 PickLabel.TextXAlignment = Enum.TextXAlignment.Center
+PickLabel.Text = "PickLogger"
+local PickGrad = Instance.new("UIGradient", PickLabel)
+local PickStroke = Instance.new("UIStroke", PickLabel)
+PickStroke.Thickness = 1 PickStroke.Color = Color3.fromRGB(255,255,255) PickStroke.Transparency = 0.5
 
-local function getIntStat(name)
-    local stat = LocalPlayer:FindFirstChild(name)
-    if not stat then
-        local ls = LocalPlayer:FindFirstChild("leaderstats")
-        if ls then stat = ls:FindFirstChild(name) end
+local LogScroll = Instance.new("ScrollingFrame", Console_F) LogScroll.BackgroundTransparency = 1 LogScroll.Position = UDim2.new(0, 12, 0, 40) LogScroll.Size = UDim2.new(1, -24, 1, -50) LogScroll.CanvasSize = UDim2.new(0, 0, 0, 0) LogScroll.ScrollBarThickness = 1 LogScroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+
+local LogList = Instance.new("UIListLayout", LogScroll) LogList.Padding = UDim.new(0, 4)
+
+_G.Log = function(text, color)
+    local ml = Instance.new("TextLabel", LogScroll) 
+    ml.Size = UDim2.new(1, 0, 0, 18) ml.BackgroundTransparency = 1 
+    ml.Font = Enum.Font.Code ml.TextSize = 13 
+    ml.TextColor3 = color or Color3.fromRGB(255, 255, 255) 
+    ml.Text = "»  " .. tostring(text) -- Clean arrow indicator instead of timestamp
+    ml.TextXAlignment = Enum.TextXAlignment.Left 
+    ml.TextWrapped = true
+    task.defer(function() LogScroll.CanvasPosition = Vector2.new(0, LogScroll.AbsoluteCanvasSize.Y) end)
+end
+
+--// Logic functions
+local lastIteration, frameCount, fps = tick(), 0, 0
+local function updateFPS()
+    frameCount = frameCount + 1
+    if tick() - lastIteration >= 1 then
+        fps = frameCount
+        frameCount = 0
+        lastIteration = tick()
     end
-    
-    return stat and tostring(stat.Value) or "0"
+    return fps
+end
+
+local function get_wave()
+    local s, v = pcall(function() return pGui:WaitForChild("ReactGameTopGameDisplay", 2).Frame.wave.container.value.Text:match("^(%d+)") end)
+    return s and v or "0"
 end
 
 local function countZombies()
     local folder = workspace:FindFirstChild("NPCs")
-    if not folder then return "nil" end
-    local count = 0
-    for _, child in ipairs(folder:GetChildren()) do
-        if child:IsA("Model") and child.Name ~= "Red" and child.Name ~= "Blue" then
-            count = count + 1
-        end
+    if not folder then return 0 end
+    local c = 0
+    for _, z in ipairs(folder:GetChildren()) do
+        if z:IsA("Model") and z.Name ~= "Red" and z.Name ~= "Blue" then c = c + 1 end
     end
-    return (count > 0) and tostring(count) or "nil"
+    return c
 end
 
+local function get_gametype()
+    return pGui:FindFirstChild("LobbyGui") and "Lobby" or (pGui:FindFirstChild("GameGui") and "Game" or "Menu")
+end
+
+local customText = "PickHub [ Auto Strat ]"
+local curWM = ""
+
 RunService.RenderStepped:Connect(function()
-    local hue = (tick() % 5) / 5
-    local c1, c2 = Color3.fromHSV(hue, 0.8, 1), Color3.fromHSV(hue, 0.8, 0.5)
-    WM_L1.BackgroundColor3 = c1 WM_L2.BackgroundColor3 = c2
-    HUD_L1.BackgroundColor3 = c1 HUD_L2.BackgroundColor3 = c2
-    Z_L1.BackgroundColor3 = c1 Z_L2.BackgroundColor3 = c2
-
-    local fps = math.floor(1 / RunService.RenderStepped:Wait())
-    local ping = math.floor(Stats.Network.ServerStatsItem["Data Ping"]:GetValue())
+    local t = tick()
+    local glow = (math.sin(t * 6) + 1) / 2
+    local shiny = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 255, 0)), 
+        ColorSequenceKeypoint.new(glow, Color3.fromRGB(255, 255, 255)), 
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 200, 0))
+    })
     
-    WM_Label.Text = string.format("%s  |  Server; %s  |  FPS; %d  ", 
-        currentDisplayTitle .. string.rep(" ", #customText - #currentDisplayTitle), 
-        gameState, fps, ping)
-
-    local success, target = pcall(function() return pGui.ReactUniversalHotbar.Frame.troops end)
-    if success and target and target.Visible then
-        HUD_O.Position = UDim2.new(0, target.AbsolutePosition.X + (target.AbsoluteSize.X / 2), 0, target.AbsolutePosition.Y - 5)
-    else
-        HUD_O.Position = UDim2.new(0.5, 0, 1, -100)
-    end
+    WM_L1.BackgroundColor3 = Color3.fromRGB(0, 255, 0) WM_L2.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    HUD_L1.BackgroundColor3 = Color3.fromRGB(0, 255, 0) HUD_L2.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Console_L1.BackgroundColor3 = Color3.fromRGB(0, 255, 0) Console_L2.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
     
-    HUD_Label.Text = string.format("%s  |  Level; %s  |  Coins; %s  |  Gems; %s", LocalPlayer.Name, getIntStat("Level"), getIntStat("Coins"), getIntStat("Gems"))
-    Z_O.Position = UDim2.new(HUD_O.Position.X.Scale, HUD_O.Position.X.Offset, HUD_O.Position.Y.Scale, HUD_O.Position.Y.Offset - 45)
-    Z_Label.Text = "Zombies; " .. countZombies()
+    PickGrad.Color = shiny
+    WM_Label.Text = curWM
+    local devider = "  ┃  "
+    HUD_Label.Text = string.format("%s%s%s%sWave: %s%sZombies: %d%sFPS: %d", 
+        LocalPlayer.Name, devider, get_gametype(), devider, get_wave(), devider, countZombies(), devider, updateFPS())
 end)
 
--- 8. TEXT ANIMATION
 task.spawn(function()
-    local rng = Random.new()
     while true do
-        for i = 1, #customText do currentDisplayTitle = string.sub(customText, 1, i) task.wait(rng:NextNumber(0.08, 0.12)) end
+        for i = 1, #customText do curWM = string.sub(customText, 1, i) task.wait(0.08) end
         task.wait(3)
-        for i = #customText, 0, -1 do currentDisplayTitle = string.sub(customText, 1, i) task.wait(0.04) end
-        task.wait(0.5)
+        for i = #customText, 0, -1 do curWM = string.sub(customText, 1, i) task.wait(0.04) end
     end
 end)
 
-_G.Log("PickHub Master Load Success", Color3.fromRGB(0, 255, 0))
-
-
+_G.Log("Loadded { PickHub }", Color3.fromRGB(200, 255, 200))
 
 local function identify_game_state()
     local players = game:GetService("Players")
