@@ -7,9 +7,6 @@ local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 local LocalPlayer = Players.LocalPlayer
 
--- Removed the "Cleanup" and "Dialog" destruction logic as requested
-
--- HELPER: Create Skeet-Style Frames (Fixed hierarchy)
 local function createSkeetFrame(name, parent, size, anchor, pos, isRounded)
     local Outline = Instance.new("Frame")
     Outline.Name = name
