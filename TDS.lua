@@ -418,6 +418,7 @@ local function UpdateUI(towerTable)
         local Label = Instance.new("TextLabel", SkeetList)
         Label.Size = UDim2.new(1, 0, 0, 18)
         Label.BackgroundTransparency = 1
+        Label.TextColor3 = Color3.fromRGB(255, 255, 255)
         Label.RichText = true
         Label.Text = string.format("<Font color='#FFFFFF'>[ %d ] %s</Font>", i, name)
         Label.Font = Enum.Font.Code
