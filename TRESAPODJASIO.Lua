@@ -651,26 +651,31 @@ local function handle_post_match()
     else
         bonus_string = "_No bonus rewards found._"
     end
-
+    
     local post_data = {
-        username = "TDS AutoStrat",
+        username = "ASE",
+        avatar_url = "https://media.discordapp.net/attachments/1451836764498169958/1455879407792296052/standard3.gif?ex=695654db&is=6955035b&hm=0482d1e30ca82eeeffca09b1b233f2ba1c225592a3ddf4a7c10debf1b839238d&=",
         embeds = {{
-            title = (match.Status == "WIN" and "🏆 TRIUMPH" or "💀 DEFEAT"),
-            color = (match.Status == "WIN" and 0x2ecc71 or 0xe74c3c),
-            description =
-                "### 📋 Match Overview\n" ..
-                "> **Status:** `" .. match.Status .. "`\n" ..
-                "> **Time:** `" .. match.Time .. "`\n" ..
-                "> **Current Level:** `" .. match.Level .. "`\n" ..
-                "> **Wave:** `" .. match.Wave .. "`\n",
-                
+            title = match.Status == "WIN" and "🏆 Victory Achieved!" or "💀 Defeat Encountered",
+            color = 0x3498db, -- unified blue theme for consistency
+            description = table.concat({
+                "### 📋 Match Summary",
+                "> **Status:** `" .. match.Status .. "`",
+                "> **Time:** `" .. match.Time .. "`",
+                "> **Level Reached:** `" .. match.Level .. "`",
+                "> **Wave Completed:** `" .. match.Wave .. "`"
+            }, "\n"),
+            thumbnail = { url = "https://media.discordapp.net/attachments/1451836764498169958/1455842221784830097/standard1.gif?ex=69563239&is=6954e0b9&hm=1214d2605c3138c291f6e315b3fa95808964f845b467b0a86ba0bd0ad1864803&=" }, -- banner GIF or image
             fields = {
                 {
-                    name = "✨ Rewards",
-                    value = "```ansi\n" ..
-                            "[2;33mCoins:[0m +" .. match.Coins .. "\n" ..
-                            "[2;34mGems: [0m +" .. match.Gems .. "\n" ..
-                            "[2;32mXP:   [0m +" .. match.XP .. "```",
+                    name = "💰 Rewards Collected",
+                    value = table.concat({
+                        "```ansi",
+                        "[2;33mCoins:[0m +" .. match.Coins,
+                        "[2;34mGems: [0m +" .. match.Gems,
+                        "[2;32mXP:   [0m +" .. match.XP,
+                        "```"
+                    }, "\n"),
                     inline = false
                 },
                 {
@@ -680,14 +685,23 @@ local function handle_post_match()
                 },
                 {
                     name = "📊 Session Totals",
-                    value = "```py\n# Total Amount\nCoins: " .. current_total_coins .. "\nGems:  " .. current_total_gems .. "```",
+                    value = table.concat({
+                        "```py",
+                        "# Totals",
+                        "Coins: " .. current_total_coins,
+                        "Gems:  " .. current_total_gems,
+                        "```"
+                    }, "\n"),
                     inline = true
                 }
             },
-            footer = { text = "Logged for " .. local_player.Name .. " • TDS AutoStrat" },
+            footer = {
+                text = "Logged for " .. local_player.Name .. " • ASE"
+            },
             timestamp = DateTime.now():ToIsoDate()
         }}
     }
+
 
     pcall(function()
         send_request({
@@ -707,35 +721,43 @@ local function log_match_start()
     if not _G.SendWebhook then return end
     if type(_G.Webhook) ~= "string" or _G.Webhook == "" then return end
     if _G.Webhook:find("YOUR%-WEBHOOK") then return end
-    
+        
     local start_payload = {
-        username = "TDS AutoStrat",
+        username = "ASE",
+        avatar_url = "https://media.discordapp.net/attachments/1451836764498169958/1455879407792296052/standard3.gif?ex=695654db&is=6955035b&hm=0482d1e30ca82eeeffca09b1b233f2ba1c225592a3ddf4a7c10debf1b839238d&=",
         embeds = {{
-            title = "🚀 **Match Started Successfully**",
-            description = "The AutoStrat has successfully loaded into a new game session and is beginning execution.",
-            color = 3447003,
+            title = "🚀 **Session Kickoff!**",
+            description = "PHS is ready and loaded into a new match. 🎮\nSit back while the auto-strategy runs seamlessly!",
+            color = 0x3498db, -- blue theme
+            thumbnail = { url = "https://media.discordapp.net/attachments/1451836764498169958/1455842221784830097/standard1.gif?ex=69563239&is=6954e0b9&hm=1214d2605c3138c291f6e315b3fa95808964f845b467b0a86ba0bd0ad1864803&=" }, -- banner GIF or image
             fields = {
                 {
-                    name = "🪙 Starting Coins",
-                    value = "```" .. tostring(start_coins) .. " Coins```",
+                    name = "🪙 Coins",
+                    value = "```" .. tostring(start_coins) .. "```",
                     inline = true
                 },
                 {
-                    name = "💎 Starting Gems",
-                    value = "```" .. tostring(start_gems) .. " Gems```",
+                    name = "💠 Gems",
+                    value = "```" .. tostring(start_gems) .. "```",
                     inline = true
                 },
                 {
-                    name = "Status",
-                    value = "🟢 Running Script",
+                    name = "⚡ Script Status",
+                    value = "✅ **Active & Running**",
+                    inline = false
+                },
+                {
+                    name = "💡 Tip",
+                    value = "PHS will handle your strategy automatically. Keep an eye on resources for maximum efficiency!",
                     inline = false
                 }
             },
-            footer = { text = "Logged for " .. local_player.Name .. " • TDS AutoStrat" },
+            footer = {
+                text = "Logged for " .. local_player.Name .. " • ASE "
+            },
             timestamp = DateTime.now():ToIsoDate()
         }}
     }
-
     pcall(function()
         send_request({
             Url = _G.Webhook,
